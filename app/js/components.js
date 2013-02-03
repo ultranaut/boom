@@ -16,8 +16,34 @@ var B = (function () {
     console.log(arguments);
   };
 
+
   /**
    * public properties and methods
+   */
+
+  /**
+   * Vcc singleton
+   *   kind of thinking Vcc should just be a "constant" maybe
+   *   i.e., it's just always on and the only question is if
+   *   a given pin/component is connected to it or not
+   */
+  var vcc = boom.Vcc = function () {
+    if (typeof boom.Vcc.instance === 'object') {
+      return boom.Vcc.instance;
+    }
+    var _power = 0;
+    this.powerOn = function () {
+      _power = 1;
+    };
+    this.hasPower = function () {
+      return _power;
+    };
+    boom.Vcc.instance = this;
+  };
+
+
+  /**
+   * Relay
    */
   var relay = boom.Relay = function () {
     this._uid = _getId();
