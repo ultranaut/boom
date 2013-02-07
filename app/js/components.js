@@ -12,8 +12,11 @@ var B = (function () {
   var _getId = function () {
     return ++_uid;
   };
-  var _propagate = function (uid, value) {
-    console.log(arguments);
+
+  var circuit = {
+    propagate: function (uid, value) {
+      console.log(arguments);
+    }
   };
 
 
@@ -21,53 +24,45 @@ var B = (function () {
    * public properties and methods
    */
 
-  /**
-   * Vcc singleton
-   *   kind of thinking Vcc should just be a "constant" maybe
-   *   i.e., it's just always on and the only question is if
-   *   a given pin/component is connected to it or not
-   */
-  var vcc = boom.Vcc = function () {
-    if (typeof boom.Vcc.instance === 'object') {
-      return boom.Vcc.instance;
-    }
-    var _power = 0;
-    this.powerOn = function () {
-      _power = 1;
-    };
-    this.hasPower = function () {
-      return _power;
-    };
-    boom.Vcc.instance = this;
-  };
-
 
   /**
    * Relay
    */
-  var relay = boom.Relay = function () {
-    this._uid = _getId();
-    this._input = 0;
-    this._power = 0;
+  var Relay = boom.Relay = function () {
+    if (!(this instanceof Relay)) {
+      return new Relay();
+    }
+    this._uid    = _getId();
+    this._power  = 0;
+    this._input  = 0;
   };
-  relay.prototype = {
+  Relay.prototype = {
+    _setPower: function (value) {
+      this._power = value;
+      this._output();
+      return this;
+    },
+    powerUp: function () {
+      this._power = 1;
+      this.output();
+      return this;
+    },
+    powerDown: function () {
+      this._power = 0;
+      this.output();
+      return this;
+    },
     output: function () {
-      return this._input & this._power;
+      circuit.propagate(this, this._input && this._power);
     },
     setHigh: function () {
       this._input = 1;
-      _propagate(this._uid, this.output());
+      this.output();
       return this;
     },
     setLow: function () {
       this._input = 0;
-      _propagate(this._uid, this.output());
-    },
-    hasPower: function () {
-      return this._power;
-    },
-    powerOn: function () {
-      this._power = 1;
+      this.output();
       return this;
     }
   };
